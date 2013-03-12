@@ -15,13 +15,13 @@ import play.api.libs.concurrent.Execution.Implicits._
 object Users extends Controller {
 
   def show(login: String) = Action { implicit request =>
-    val user =  User.findByLogin(login)
-    Async {
-     user.map(_ match {
-      case Some(userObj) => Ok(userObj.asJson)
-      case None          => NotFound
-     })
-    }
+      val user = User.findByLogin(login)
+      Async {
+        user.map(_ match {
+          case Some(userObj) => Ok(userObj.asJson)
+          case None          => NotFound
+        })
+      }
   }
 
 }
