@@ -36,7 +36,7 @@ object User {
 
   val baseUrl = "https://api.github.com/users/"
 
-  def findByLogin(login: String) = {
+  def findByLogin(login: String): Future[Option[User]] = {
     WS.url(baseUrl + login).get().orTimeout("Timeout", 3, TimeUnit.SECONDS).map { response =>
       response match {
         case Left(resp) =>   {

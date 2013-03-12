@@ -15,13 +15,22 @@ import play.api.libs.concurrent.Execution.Implicits._
 object Users extends Controller {
 
   def show(login: String) = Action { implicit request =>
-      val user = User.findByLogin(login)
+      val githubUser = User.findByLogin(login)
+
       Async {
-        user.map(_ match {
-          case Some(userObj) => Ok(userObj.asJson)
-          case None          => NotFound
-        })
+        // Could be written two ways:
+        // The idiomatic Scala way
+        githubUser.map {
+          _.map( user => Ok(user.asJson) )
+           .getOrElse(NotFound)
+        }
+        // or using pattern matching
+//        githubUser.map(_ match {
+//          case Some(user) => Ok(user.asJson)
+//          case None => NotFound
+//        })
       }
+
   }
 
 }
