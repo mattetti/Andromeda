@@ -17,7 +17,11 @@ object Users extends Controller {
   def show(login: String) = Action { implicit request =>
     val user =  User.findByLogin(login)
     Async {
-     user.map(u => Ok(u.asJson))
+     user.map(_ match {
+      case Some(userObj) => Ok(userObj.asJson)
+      case None          => NotFound
+     })
     }
   }
+
 }
