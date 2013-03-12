@@ -15,9 +15,10 @@ import play.api.libs.concurrent.Execution.Implicits._
 object Users extends Controller {
 
   def show(login: String) = Action { implicit request =>
-      val githubUser = GithubUser.findByLogin(login)
 
       Async {
+        val githubUser = GithubUser.findByLogin(login)
+
         // Could be written two ways:
         // The idiomatic Scala way
         githubUser.map {
