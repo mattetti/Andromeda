@@ -18,10 +18,10 @@ import play.api.libs.concurrent.Execution.Implicits._
 import concurrent.Future
 import javassist.NotFoundException
 
-case class User( id: Int, login: String, name: String, created_at: String ){
+case class GithubUser( id: Int, login: String, name: String, created_at: String ){
 
-  implicit val userWrites = new Writes[User] {
-    def writes(user: User): JsValue = Json.obj(
+  implicit val userWrites = new Writes[GithubUser] {
+    def writes(user: GithubUser): JsValue = Json.obj(
       "id" -> user.id,
       "login" -> user.login,
       "name" -> user.name,
@@ -29,19 +29,19 @@ case class User( id: Int, login: String, name: String, created_at: String ){
     )
   }
 
-  def asJson = toJson(User.this)
+  def asJson = toJson(GithubUser.this)
 }
 
-object User {
+object GithubUser {
 
   val baseUrl = "https://api.github.com/users/"
 
-  def findByLogin(login: String): Future[Option[User]] = {
+  def findByLogin(login: String): Future[Option[GithubUser]] = {
     WS.url(baseUrl + login).get().orTimeout("Timeout", 3, TimeUnit.SECONDS).map { response =>
       response match {
         case Left(resp) =>   {
           if (resp.status == 200){
-            Option(User.fromJson(resp.json))
+            Option(GithubUser.fromJson(resp.json))
           } else {
             None
           }
@@ -55,8 +55,8 @@ object User {
     }
   }
 
-   def fromJson(body: JsValue): User = {
-     User(
+   def fromJson(body: JsValue): GithubUser = {
+     GithubUser(
       (body \ "id").as[Int],
       (body \ "login").as[String],
       (body \ "name").as[String],
