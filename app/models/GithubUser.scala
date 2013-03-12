@@ -37,17 +37,19 @@ object GithubUser {
   val baseUrl = "https://api.github.com/users/"
 
   def findByLogin(login: String): Future[Option[GithubUser]] = {
-    WS.url(baseUrl + login).get().orTimeout("Timeout", 3, TimeUnit.SECONDS).map { response =>
+    WS.url(baseUrl + login).get().orTimeout("Timeout", 3, TimeUnit.SECONDS ).map { response =>
       response match {
-        case Left(resp) =>   {
+        // Left and Right and used to define what Type is returned by the Timeout
+        case Left(resp) => {
           if (resp.status == 200){
             Option(GithubUser.fromJson(resp.json))
           } else {
+            play.Logger.error(s"Fetching GitHub's profile for $login failed.")
             None
           }
         }
         case Right(_) => {
-          println("Request timed out")
+          play.Logger.error(s"Fetching GitHub's profile for $login timed out.")
           None
         }
       }
