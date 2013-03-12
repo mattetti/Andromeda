@@ -7,18 +7,14 @@
  */
 
 package models
-import java.util.Date;
 import java.util.concurrent.TimeUnit
 import play.api.libs.ws._
 import play.api.libs.json.Json._
-import play.api.libs.json.JsValue
 import play.api.libs.json._
 import play.api.libs.concurrent._
 import scala.concurrent._
-import scala.concurrent.duration._
 import play.api.libs.concurrent.Execution.Implicits._
 import concurrent.Future
-import javassist.NotFoundException
 
 case class GithubUser( id: Int, login: String, name: String, created_at: String, sshKeys: Seq[String] = List()){
 
