@@ -44,11 +44,12 @@ object GithubUser {
           if (resp.status == 200){
             Option(GithubUser.fromJson(resp.json))
           } else {
-            play.Logger.error(s"Fetching GitHub's profile for $login failed.")
+            val debuggedResponse = resp.body.toString()
+            play.Logger.error(s"Fetching GitHub's profile for $login failed: $debuggedResponse")
             None
           }
         }
-        case Right(_) => {
+        case _ => {
           play.Logger.error(s"Fetching GitHub's profile for $login timed out.")
           None
         }
