@@ -15,8 +15,11 @@ import play.api.libs.concurrent._
 import scala.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
 import concurrent.Future
+import models.ApiFetcher
 
-case class GithubUser( id: Int, login: String, name: String, created_at: String, sshKeys: Seq[String] = List()){
+case class GithubUser( id: Int, login: String, name: String,
+                       created_at: String,
+                       sshKeys: Seq[String] = List() ) {
 
   implicit val userWrites = new Writes[GithubUser] {
     def writes(user: GithubUser): JsValue = Json.obj(
@@ -29,33 +32,28 @@ case class GithubUser( id: Int, login: String, name: String, created_at: String,
   }
 
   def asJson = toJson(GithubUser.this)
+
+  def repositories = {
+    val url = s"/users/${login}/repos"
+    WS.url(url).get().orTimeout("Timeout", 3, TimeUnit.SECONDS ).map { response =>
+      response match {
+        // Left and Right and used to define what Type is returned by the Timeout
+        case Left(resp) => {
+        }
+        case _ => {}
+      }
+    }
+  }
 }
 
-object GithubUser {
+object GithubUser extends ApiFetcher {
 
   val baseUrl = "https://api.github.com/users/"
 
   def userDetails(login: String): Future[Option[JsValue]] = {
-    WS.url(baseUrl + login).get().orTimeout("Timeout", 3, TimeUnit.SECONDS ).map { response =>
-      response match {
-        // Left and Right and used to define what Type is returned by the Timeout
-        case Left(resp) => {
-          if (resp.status == 200){
-            Option(resp.json)
-          } else {
-            val debuggedResponse = resp.body.toString()
-            play.Logger.error(s"Fetching GitHub's profile for $login failed: $debuggedResponse")
-            None
-          }
-        }
-        case _ => {
-          play.Logger.error(s"Fetching GitHub's profile for $login timed out.")
-          None
-        }
-      }
-
-    }
+    get(baseUrl + login)
   }
+
   /*
      To create a github user, we fetch data from 2 different endpoints.
      And wrap the result in an Option in case something wrong happens in the futures.
@@ -74,17 +72,9 @@ object GithubUser {
 
   def sshKeysForLogin(login: String): Future[Seq[String]] = {
     val url = s"https://api.github.com/users/$login/keys"
-    WS.url(url).get().orTimeout("Timeout", 3, TimeUnit.SECONDS ).map { response =>
-      response match {
-        case Left(resp) => {
-          if (resp.status == 200){
-            (resp.json \\ "key").map( _.as[String] )
-          } else {
-            List()
-          }
-        }
-        case _ => List()
-      }
+    get(url).map {
+      _.map(jsonBody => (jsonBody \\ "key").map( _.as[String] ) )
+       .getOrElse(List())
     }
   }
 
