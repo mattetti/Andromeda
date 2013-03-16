@@ -56,7 +56,10 @@ object GithubUser {
 
     }
   }
-
+  /*
+     To create a github user, we fetch data from 2 different endpoints.
+     And wrap the result in an Option in case something wrong happens in the futures.
+   */
   def findByLogin(login: String): Future[Option[GithubUser]] = {
     for {
       details <- userDetails(login)

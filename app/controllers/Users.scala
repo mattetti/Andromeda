@@ -17,6 +17,7 @@ object Users extends Controller {
   def show(login: String) = Action { implicit request =>
 
       Async {
+        // this makes 2 async calls
         val githubUser = GithubUser.findByLogin(login)
 
         // Could be written two ways:
