@@ -32,18 +32,6 @@ case class GithubUser( id: Int, login: String, name: String,
   }
 
   def asJson = toJson(GithubUser.this)
-
-  def repositories = {
-    val url = s"/users/${login}/repos"
-    WS.url(url).get().orTimeout("Timeout", 3, TimeUnit.SECONDS ).map { response =>
-      response match {
-        // Left and Right and used to define what Type is returned by the Timeout
-        case Left(resp) => {
-        }
-        case _ => {}
-      }
-    }
-  }
 }
 
 object GithubUser extends ApiFetcher {
