@@ -47,20 +47,21 @@ object GithubUser extends ApiFetcher {
      And wrap the result in an Option in case something wrong happens in the futures.
    */
   def findByLogin(login: String): Future[Option[GithubUser]] = {
+    val userInfo = userDetails(login).map(fromDetails)
+    val sshKeys = sshKeysForLogin(login)
+
     for {
-      details <- userDetails(login)
-      info <- future { fromDetails(details) }
-      keys <- sshKeysForLogin(login)
+      info <- userInfo
+      keys <- sshKeys
     } yield { info match {
         case Some(info) => Some(GithubUser(info.id, info.login, info.name, info.created_at, keys))
         case _ => None
-        }
-      }
+       }
+    }
   }
 
   def sshKeysForLogin(login: String): Future[Seq[String]] = {
-    val url = s"https://api.github.com/users/$login/keys"
-    get(url).map {
+    get( s"https://api.github.com/users/$login/keys" ).map {
       _.map(jsonBody => (jsonBody \\ "key").map( _.as[String] ) )
        .getOrElse(List())
     }
