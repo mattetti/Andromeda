@@ -47,8 +47,8 @@ object GithubUser extends ApiFetcher {
      And wrap the result in an Option in case something wrong happens in the futures.
    */
   def findByLogin(login: String): Future[Option[GithubUser]] = {
-    val userInfo = userDetails(login).map(fromDetails)
-    val sshKeys = sshKeysForLogin(login)
+    val userInfo: Future[Option[GithubUser]] = userDetails(login).map(fromDetails)
+    val sshKeys: Future[Seq[String]] = sshKeysForLogin(login)
 
     for {
       info <- userInfo
