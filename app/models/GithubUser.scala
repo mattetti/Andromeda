@@ -7,7 +7,7 @@
  */
 
 package models
-import java.util.concurrent.TimeUnit
+import wrappers.ApiFetcher
 import play.api.libs.ws._
 import play.api.libs.json.Json._
 import play.api.libs.json._
@@ -15,7 +15,6 @@ import play.api.libs.concurrent._
 import scala.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
 import concurrent.Future
-import models.ApiFetcher
 
 case class GithubUser( id: Int, login: String, name: String,
                        created_at: String,
@@ -34,11 +33,11 @@ case class GithubUser( id: Int, login: String, name: String,
   def asJson = toJson(GithubUser.this)
 }
 
-object GithubUser extends ApiFetcher {
+object GithubUser extends wrappers.ApiFetcher {
 
   val baseUrl = "https://api.github.com/users/"
 
-  def userDetails(login: String): Future[Option[JsValue]] = {
+  def userDetails(login: String) = {
     get(baseUrl + login)
   }
 
@@ -47,7 +46,7 @@ object GithubUser extends ApiFetcher {
      And wrap the result in an Option in case something wrong happens in the futures.
    */
   def findByLogin(login: String): Future[Option[GithubUser]] = {
-    val userInfo: Future[Option[GithubUser]] = userDetails(login).map(fromDetails)
+    val userInfo = userDetails(login).map(fromDetails)
     val sshKeys: Future[Seq[String]] = sshKeysForLogin(login)
 
     for {

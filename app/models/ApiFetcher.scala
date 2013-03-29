@@ -1,11 +1,10 @@
-package models
+package wrappers
 
 import play.api.libs.ws._
 import play.api.libs.ws.WS
-import java.util.concurrent.TimeUnit
 import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
-
+import play.api.libs.json.JsValue
 
 
 /**
@@ -16,10 +15,18 @@ import play.api.libs.concurrent.Execution.Implicits._
  * To change this template use File | Settings | File Templates.
  */
 trait ApiFetcher {
-  def get(url: String, timeout: Int = 1) =
-    WS.url(url).get().orTimeout("Timeout", timeout, TimeUnit.SECONDS ).map { r => apiResponseHandler(r) }
 
-  def apiResponseHandler(response: Either[Response, String]) = {
+  /**
+   *
+   * @param url the full url to fetch, including query params.
+   * @param timeout After how long should the query timeout.
+   * @param fallback What value should be returned in case of a timeout.
+   * @return The returned value should be an Option containing the json response, none or fallback.
+   */
+  def get(url: String, timeout: Long = 1000, fallback: Option[JsValue] = None) =
+    WS.url(url).get().orTimeout(fallback, timeout).map( apiResponseHandler )
+
+  def apiResponseHandler(response: Either[Response, Option[JsValue]]): Option[JsValue] = {
     response match {
       // Left and Right and used to define what Type is returned by the Timeout
       case Left(resp) => {
@@ -32,9 +39,9 @@ trait ApiFetcher {
           None
         }
       }
-      case _ => {
+      case Right(fallsbackResp) => {
         play.Logger.error(s"Fetching failed: timed out.")
-        None
+        fallsbackResp
       }
     }
   }
