@@ -22,11 +22,6 @@ object Users extends Controller {
           _.map( user => Ok(user.asJson) )
            .getOrElse(NotFound)
         }
-        // or using pattern matching
-//        githubUser.map(_ match {
-//          case Some(user) => Ok(user.asJson)
-//          case None => NotFound
-//        })
       }
 
   }
